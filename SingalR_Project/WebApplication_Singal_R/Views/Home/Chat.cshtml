@@ -1,0 +1,50 @@
+﻿
+@{
+    ViewBag.Title = "Chat";
+}
+
+
+<div class="row">
+    <div class="col-md-3">
+        <h3>Users</h3>
+        <ul id="users" style="color:aqua;">Users</ul>
+    </div>
+    <div class="col-md-9">
+        <div style="color:blue;">Display Name: <span id="username"></span></div>
+        <div>
+            <input style="color:seagreen;" type="text" id="msg"/>
+            <button id="send" type="button">Send</button>
+        </div>
+        <ul id="messages" style="color:orchid;"></ul>
+    </div>
+</div>
+
+@section scripts{
+        <script src="~/Scripts/jquery.signalR-2.2.2.js"></script>
+        <script src="~/signalR/hubs"></script>
+
+    <script type="text/javascript">
+        $(document).ready(() => {
+            var name = prompt("What is your display name...?")
+            var hub = $.connection.messageHub;
+            hub.client.updateUsers = (list) => {
+                $("#users").empty();
+                for (var i = 0; i < list.length; i++) {
+                    $("#users").append(`<li>${list[i]}</li>`);
+                }
+            }
+            hub.client.broadcast = (n, m) => {
+                $("#messages").append(`<li>${n}:${m}`);
+            }
+
+            hub.connection.start()
+                .done(() => {
+                hub.server.addMe(name);
+                $("#send").click(() => {
+                    hub.server.send(name, $("#msg").val());
+                });
+            })
+        });
+    </script>
+}
+
